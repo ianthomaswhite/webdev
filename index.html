@@ -6,12 +6,16 @@
     <title>Website Audit Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
     <style>
-        /* Custom scrollbar for table */
+        /* Custom scrollbar styling for a cleaner look */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        /* Animation utility for smooth tab switching */
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen p-4 md:p-8">
@@ -21,7 +25,7 @@
     <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-200 pb-4">
         <div>
             <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Website Audit Tool</h1>
-            <p class="text-slate-500 mt-1">6-Site Comparative Analysis & Scoring System</p>
+            <p class="text-slate-500 mt-1">6-Site Comparative Analysis</p>
         </div>
         <div class="mt-4 md:mt-0 text-right">
             <button @click="resetAll" class="text-xs font-semibold text-red-500 hover:text-red-700 bg-red-50 px-3 py-1 rounded border border-red-100 transition-colors">
@@ -35,7 +39,7 @@
             @click="currentTab = 'dashboard'"
             :class="['px-4 py-2 rounded-lg font-bold text-sm transition-all shadow-sm', currentTab === 'dashboard' ? 'bg-indigo-600 text-white ring-2 ring-indigo-600 ring-offset-2' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200']"
         >
-            🏆 Dashboard
+            Leaderboard
         </button>
 
         <button 
@@ -55,29 +59,37 @@
         
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-6 border-b border-slate-100 bg-slate-50/50">
-                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    How to Use This Tool
-                </h2>
+                <h2 class="text-lg font-bold text-slate-800">Scoring Logic & Functions</h2>
             </div>
             <div class="p-6 grid md:grid-cols-2 gap-8 text-sm text-slate-600 leading-relaxed">
                 <div>
-                    <h3 class="font-bold text-slate-900 mb-2">1. The Workflow</h3>
-                    <ul class="list-disc pl-4 space-y-1">
-                        <li>There are <strong>6 Sites</strong> to audit. Switch tabs to grade each one.</li>
-                        <li><strong>Synced Structure:</strong> If you add an element (e.g., "Holiday Banner") to one site, it appears on <em>all</em> sites automatically.</li>
-                        <li><strong>Unique Scores:</strong> Each site has its own scores and multipliers.</li>
-                        <li><strong>The Goal:</strong> Complete all items until the red badges disappear.</li>
+                    <h3 class="font-bold text-slate-900 mb-2">Element Scoring Function</h3>
+                    <p class="mb-4 font-mono text-xs bg-slate-100 p-2 rounded border border-slate-200">
+                        S = Q × [ (1 - P)(-D) + P(D + 0.5E) ]
+                    </p>
+                    <ul class="space-y-2 text-xs">
+                        <li><strong>Q (Multiplier):</strong> Scale factor (Standard = 1).</li>
+                        <li><strong>P (Presence):</strong> 1 if present, 0 if absent.</li>
+                        <li><strong>D (Desired):</strong> 1 (Yes), 0 (MB/Maybe), -1 (No).</li>
+                        <li><strong>E (Execution):</strong> Quality rating from -2 to +2.</li>
                     </ul>
                 </div>
                 <div>
-                    <h3 class="font-bold text-slate-900 mb-2">2. Scoring Key</h3>
-                    <ul class="space-y-2">
-                        <li><span class="font-mono bg-slate-100 px-1 rounded font-bold text-slate-800">Qty (Multiplier)</span>: Importance of this element (1 = Standard).</li>
-                        <li><span class="font-mono bg-slate-100 px-1 rounded font-bold text-slate-800">D (Desired)</span>: Should this exist? <br><span class="text-xs text-slate-500 ml-4">1 = Yes, 0 = Neutral, -1 = No (Forbidden).</span></li>
-                        <li><span class="font-mono bg-slate-100 px-1 rounded font-bold text-slate-800">P (Presence)</span>: Does it exist? <br><span class="text-xs text-slate-500 ml-4">1 = Yes, 0 = No.</span></li>
-                        <li><span class="font-mono bg-slate-100 px-1 rounded font-bold text-slate-800">E (Execution)</span>: Quality of implementation. <br><span class="text-xs text-slate-500 ml-4">+2 (High) to -2 (Toxic).</span></li>
-                    </ul>
+                    <h3 class="font-bold text-slate-900 mb-2">Category Grading (1-7 Scale)</h3>
+                    <div class="grid grid-cols-2 gap-4 text-xs">
+                        <div class="bg-slate-50 p-2 rounded">
+                            <strong class="block mb-1">Functional / Aesthetic</strong>
+                            <div class="flex justify-between"><span>Avg ≥ 2.0</span> <strong>7 (Best)</strong></div>
+                            <div class="flex justify-between"><span>Avg = 0.0</span> <strong>4 (Neutral)</strong></div>
+                            <div class="flex justify-between"><span>Avg ≤ -2.0</span> <strong>1 (Worst)</strong></div>
+                        </div>
+                        <div class="bg-slate-50 p-2 rounded">
+                            <strong class="block mb-1">Relevance</strong>
+                            <div class="flex justify-between"><span>Avg ≥ 1.0</span> <strong>7 (Best)</strong></div>
+                            <div class="flex justify-between"><span>Avg = 0.0</span> <strong>4 (Neutral)</strong></div>
+                            <div class="flex justify-between"><span>Avg ≤ -1.0</span> <strong>1 (Worst)</strong></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -85,7 +97,6 @@
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-6 bg-slate-50 border-b border-slate-200">
                 <h2 class="text-xl font-bold text-slate-800">Live Rankings</h2>
-                <p class="text-sm text-slate-500">Sorted by Total Score (Highest to Lowest)</p>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
@@ -130,78 +141,77 @@
             </div>
         </div>
 
-        <div v-for="(section, sIndex) in blueprint" :key="section.id" class="mb-8 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div v-for="(section, sIndex) in blueprint" :key="section.id" :class="['mb-8 bg-white rounded-xl shadow-sm border overflow-hidden transition-all', section.hidden ? 'border-slate-200 opacity-60' : 'border-slate-200']">
             
             <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h3 class="font-bold text-lg text-slate-800">{{ section.name }}</h3>
-                <div class="flex gap-2">
+                <div class="flex items-center gap-4">
+                    <button @click="section.hidden = !section.hidden" class="text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-600 border border-slate-200 rounded px-2 py-1 transition-colors">
+                        {{ section.hidden ? 'Show Section' : 'Hide Section' }}
+                    </button>
+                    
+                    <h3 :class="['font-bold text-lg', section.hidden ? 'text-slate-400 line-through' : 'text-slate-800']">
+                        {{ section.name }} <span v-if="section.hidden" class="text-xs font-normal ml-2 bg-slate-100 px-2 py-0.5 rounded text-slate-400 no-underline">Excluded</span>
+                    </h3>
+                </div>
+                
+                <div v-if="!section.hidden" class="flex gap-2">
                     <button @click="addElement(sIndex, 'A')" class="px-3 py-1.5 text-xs font-bold bg-white text-blue-600 border border-blue-200 rounded hover:bg-blue-50 transition-colors shadow-sm">+ Add Aesthetic</button>
                     <button @click="addElement(sIndex, 'F')" class="px-3 py-1.5 text-xs font-bold bg-white text-green-600 border border-green-200 rounded hover:bg-green-50 transition-colors shadow-sm">+ Add Functional</button>
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
+            <div v-if="!section.hidden" class="overflow-x-auto">
                 <table class="w-full text-left text-sm min-w-[800px]">
                     <thead>
                         <tr class="bg-white border-b border-slate-100 text-xs text-slate-400 uppercase tracking-wider">
                             <th class="px-6 py-3 w-24">Type</th>
                             <th class="px-6 py-3">Element Name</th>
-                            <th class="px-4 py-3 w-24 text-center" title="Multiplier">Qty</th>
-                            <th class="px-4 py-3 w-28 text-center" title="Desired (Should it be here?)">Desired (D)</th>
-                            <th class="px-4 py-3 w-28 text-center" title="Presence (Is it here?)">Present (P)</th>
-                            <th class="px-4 py-3 w-32 text-center" title="Execution Quality">Execution (E)</th>
+                            <th class="px-4 py-3 w-24 text-center">Qty</th>
+                            <th class="px-4 py-3 w-32 text-center">Desired (D)</th>
+                            <th class="px-4 py-3 w-28 text-center">Present (P)</th>
+                            <th class="px-4 py-3 w-32 text-center">Execution (E)</th>
                             <th class="px-6 py-3 w-20 text-right">Score</th>
                             <th class="px-4 py-3 w-12"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-50">
                         <tr v-for="(el, eIndex) in section.elements" :key="eIndex" :class="getRowClass(sIndex, eIndex)">
-                            
                             <td class="px-6 py-3">
-                                <span :class="['inline-flex items-center px-2 py-1 rounded text-xs font-bold', el.type === 'A' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700']">
-                                    {{ el.type }}
-                                </span>
+                                <span :class="['inline-flex items-center px-2 py-1 rounded text-xs font-bold', el.type === 'A' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700']">{{ el.type }}</span>
                             </td>
-
                             <td class="px-6 py-3">
                                 <input v-model="el.name" class="w-full bg-transparent border-none focus:ring-0 p-0 font-medium text-slate-700 placeholder-slate-400" placeholder="Element Name">
                             </td>
-
                             <td class="px-4 py-3 text-center">
                                 <input type="number" min="0" v-model="getDatum(sIndex, eIndex).q" class="w-16 p-1.5 text-center border border-slate-200 rounded text-slate-700 focus:border-blue-500 outline-none transition-colors">
                             </td>
-
                             <td class="px-4 py-3 text-center">
                                 <select v-model="getDatum(sIndex, eIndex).d" class="w-full p-1.5 border border-slate-200 rounded text-center bg-white text-slate-700 focus:border-blue-500 outline-none cursor-pointer">
                                     <option :value="1">Yes (1)</option>
-                                    <option :value="0">Neu (0)</option>
+                                    <option :value="0">MB (0)</option>
                                     <option :value="-1">No (-1)</option>
                                 </select>
                             </td>
-
                             <td class="px-4 py-3 text-center">
                                 <select v-model="getDatum(sIndex, eIndex).p" class="w-full p-1.5 border border-slate-200 rounded text-center bg-white text-slate-700 focus:border-blue-500 outline-none cursor-pointer">
                                     <option :value="1">Yes</option>
                                     <option :value="0">No</option>
                                 </select>
                             </td>
-
                             <td class="px-4 py-3 text-center">
                                 <select v-if="getDatum(sIndex, eIndex).p == 1" v-model="getDatum(sIndex, eIndex).e" class="w-full p-1.5 border border-slate-200 rounded text-center bg-white text-slate-700 focus:border-blue-500 outline-none cursor-pointer" :class="{'border-red-300 bg-red-50': getDatum(sIndex, eIndex).e === null}">
-                                    <option :value="null" disabled selected>-- Select --</option>
-                                    <option :value="2">High (+2)</option>
-                                    <option :value="1">Good (+1)</option>
-                                    <option :value="0">Avg (0)</option>
-                                    <option :value="-1">Poor (-1)</option>
-                                    <option :value="-2">Toxic (-2)</option>
+                                    <option :value="null" disabled selected>--</option>
+                                    <option :value="2">High</option>
+                                    <option :value="1">Good</option>
+                                    <option :value="0">Avg</option>
+                                    <option :value="-1">Poor</option>
+                                    <option :value="-2">Toxic</option>
                                 </select>
                                 <span v-else class="text-slate-300 font-mono">-</span>
                             </td>
-
                             <td class="px-6 py-3 text-right font-mono font-bold text-slate-500">
                                 {{ calculateRowScore(getDatum(sIndex, eIndex)).toFixed(1) }}
                             </td>
-
                             <td class="px-4 py-3 text-right">
                                 <button @click="removeElement(sIndex, eIndex)" class="text-slate-300 hover:text-red-500 hover:bg-red-50 w-8 h-8 rounded-full flex items-center justify-center transition-colors" title="Remove from ALL sites">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -221,114 +231,135 @@
 
     createApp({
         setup() {
-            // --- 1. THE BLUEPRINT (Synced Structure) ---
+            // --- 1. THE BLUEPRINT ---
+            // This is the "Shared DNA" of the audit.
+            // If you add an element here, it appears on ALL 6 sites.
+            // 'hidden: false' allows toggling entire sections on/off for scoring.
             const blueprint = reactive([
-                { id: "sitewide", name: "1. Sitewide (Global)", elements: [
+                { id: "sitewide", name: "1. Sitewide (Global)", hidden: false, elements: [
                     { name: "Logo (Visual)", type: "A" }, { name: "Global Font / Typography", type: "A" }, 
                     { name: "Global Font Color", type: "A" }, { name: "Global Background Color", type: "A" }, 
                     { name: "Scroll Behavior", type: "F" }, { name: "Page Separation", type: "F" }
                 ]},
-                { id: "header", name: "2. Header", elements: [
+                { id: "header", name: "2. Header", hidden: false, elements: [
                     { name: "Font / Typography", type: "A" }, { name: "Font Color", type: "A" }, 
                     { name: "Background Color", type: "A" }, { name: "Item Boundary", type: "A" }, 
                     { name: "Main Navigation", type: "F" }, { name: "Search Bar", type: "F" }, { name: "Action Button", type: "F" }
                 ]},
-                { id: "sidebar_l", name: "3. Sidebar (Left)", elements: [
+                { id: "sidebar_l", name: "3. Sidebar (Left)", hidden: false, elements: [
                     { name: "Font / Typography", type: "A" }, { name: "Font Color", type: "A" }, 
                     { name: "Background Color", type: "A" }, { name: "Item Boundary", type: "A" }, 
                     { name: "Image", type: "A" }, { name: "Action Button", type: "F" }
                 ]},
-                { id: "sidebar_r", name: "4. Sidebar (Right)", elements: [
+                { id: "sidebar_r", name: "4. Sidebar (Right)", hidden: false, elements: [
                     { name: "Font / Typography", type: "A" }, { name: "Font Color", type: "A" }, 
                     { name: "Background Color", type: "A" }, { name: "Item Boundary", type: "A" }, 
                     { name: "Image", type: "A" }, { name: "Action Button", type: "F" }
                 ]},
-                { id: "hero", name: "5. Hero Section", elements: [
+                { id: "hero", name: "5. Hero Section", hidden: false, elements: [
                     { name: "Font / Typography", type: "A" }, { name: "Font Color", type: "A" }, 
                     { name: "Background Color", type: "A" }, { name: "Item Boundary", type: "A" }, 
                     { name: "Image", type: "A" }, { name: "Text Content", type: "F" }, { name: "Action Button", type: "F" }
                 ]},
-                { id: "body", name: "6. Body / Content", elements: [
+                { id: "body", name: "6. Body / Content", hidden: false, elements: [
                     { name: "Font / Typography", type: "A" }, { name: "Font Color", type: "A" }, 
                     { name: "Background Color", type: "A" }, { name: "Item Boundary", type: "A" }, 
                     { name: "Image", type: "A" }, { name: "Text Content", type: "F" }, { name: "Action Button", type: "F" }
                 ]},
-                { id: "purchase", name: "7. Purchase Form", elements: [
+                { id: "purchase", name: "7. Purchase Form", hidden: false, elements: [
                     { name: "Font / Typography", type: "A" }, { name: "Font Color", type: "A" }, 
                     { name: "Background Color", type: "A" }, { name: "Item Boundary", type: "A" }, 
                     { name: "Image", type: "A" }, { name: "Cart Function", type: "F" }, 
                     { name: "Purchase Complete Message", type: "F" }, { name: "Input Field", type: "F" }, { name: "Action Button", type: "F" }
                 ]},
-                { id: "contact", name: "8. Contact Form", elements: [
+                { id: "contact", name: "8. Contact Form", hidden: false, elements: [
                     { name: "Font / Typography", type: "A" }, { name: "Font Color", type: "A" }, 
                     { name: "Background Color", type: "A" }, { name: "Item Boundary", type: "A" }, 
                     { name: "Message Sent Function", type: "F" }, { name: "Input Field", type: "F" }, { name: "Action Button", type: "F" }
                 ]},
-                { id: "footer", name: "9. Footer", elements: [
+                { id: "footer", name: "9. Footer", hidden: false, elements: [
                     { name: "Font / Typography", type: "A" }, { name: "Font Color", type: "A" }, 
                     { name: "Background Color", type: "A" }, { name: "Item Boundary", type: "A" }, 
                     { name: "Link", type: "F" }, { name: "Social Media", type: "F" }
                 ]}
             ]);
 
-            // --- 2. DATA MANAGEMENT ---
+            // --- 2. THE SITE DATA ---
+            // This holds the actual scores (Q, D, P, E) for each site.
+            // Structure: siteData[siteId][sectionIndex][elementIndex]
             const siteData = reactive({});
             const currentTab = ref('dashboard');
 
-            // Initial Setup
+            // Initialize buckets for all 6 sites
             const initSiteData = (siteId) => {
                 if (!siteData[siteId]) siteData[siteId] = {};
             };
             for(let i=1; i<=6; i++) initSiteData(i);
 
-            // --- 3. METHODS ---
+            // --- 3. DATA ACCESS HELPER ---
+            // Safely retrieves the specific scores for the current site/section/element
+            // If the data doesn't exist yet (e.g. new element), it creates default values.
             const getDatum = (sIdx, eIdx) => {
                 const siteId = currentTab.value;
                 if (!siteData[siteId][sIdx]) siteData[siteId][sIdx] = [];
-                // Default value structure
+                
+                // Default Values: Q=1, D=Yes(1), P=Yes(1), E=Null (Waiting for input)
                 if (!siteData[siteId][sIdx][eIdx]) {
                     siteData[siteId][sIdx][eIdx] = { q: 1, d: 1, p: 1, e: null };
                 }
                 return siteData[siteId][sIdx][eIdx];
             };
 
+            // --- 4. SCORING MATH ---
+            // Calculates the score for a single row.
             const calculateRowScore = (datum) => {
                 const D = parseInt(datum.d);
                 const P = parseInt(datum.p);
+                // Treat null E as 0 for live math to avoid NaN errors
                 const E = datum.e !== null ? parseInt(datum.e) : 0;
-                // Formula: S = (1-P)(-D) + P(D + 0.5E)
+                
+                // CORE FORMULA:
+                // Part A: (1-P)(-D) -> Penalty for missing a required item.
+                // Part B: P(D + 0.5E) -> Score for presence + execution quality.
                 const score = ((1 - P) * (-D)) + (P * (D + (0.5 * E)));
-                return score * datum.q;
+                
+                return score * datum.q; // Apply Multiplier
             };
 
+            // --- 5. ACTIONS ---
+            // Add a new row to the Blueprint (Synced to all sites)
             const addElement = (sIdx, type) => {
                 blueprint[sIdx].elements.push({ name: "New Element", type: type });
             };
 
+            // Remove a row from Blueprint and clean up data
             const removeElement = (sIdx, eIdx) => {
                 if(confirm('Remove this element from ALL 6 sites?')) {
                     blueprint[sIdx].elements.splice(eIdx, 1);
-                    // Cleanup removed data to prevent ghosting
+                    // Also delete the data for this row in all 6 site buckets
                     for(let i=1; i<=6; i++) {
                         if(siteData[i][sIdx]) siteData[i][sIdx].splice(eIdx, 1);
                     }
                 }
             };
 
+            // Full Reset
             const resetAll = () => {
                 if(confirm("DANGER: This will wipe all scores for all sites. Continue?")) {
                     location.reload();
                 }
             };
 
-            // --- 4. SCORING ENGINE ---
+            // --- 6. COMPUTED PROPERTIES ---
 
-            // Count missing items (P=1, E=null)
+            // Count "Incomplete" items per site for the Red Badges
+            // Logic: Is Present (P=1) BUT Execution (E) is still Null?
             const siteIncompleteCounts = computed(() => {
                 const counts = {};
                 for(let i=1; i<=6; i++) {
                     let count = 0;
                     blueprint.forEach((sec, sIdx) => {
+                        if(sec.hidden) return; // Ignore hidden sections
                         sec.elements.forEach((el, eIdx) => {
                             const d = siteData[i]?.[sIdx]?.[eIdx];
                             if (d && d.p == 1 && d.e === null) count++;
@@ -339,36 +370,39 @@
                 return counts;
             });
 
+            // Main Grading Logic
+            // Aggregates all rows into Relevance, Aesthetics, Functionality scores.
             const calculateSiteGrades = (siteId) => {
                 let totals = { A: 0, F: 0, R: 0, countA: 0, countF: 0, countR: 0 };
                 
                 blueprint.forEach((sec, sIdx) => {
+                    if (sec.hidden) return; // Skip Hidden Sections completely
+
                     sec.elements.forEach((el, eIdx) => {
                         const d = siteData[siteId]?.[sIdx]?.[eIdx];
                         if (!d) return;
 
-                        // Only calculate if "Present" or "Required" logic is active
                         const score = calculateRowScore(d);
                         
-                        // Buckets
+                        // Add to A or F bucket based on type
                         if (el.type === 'A') { totals.A += score; totals.countA += d.q; }
                         if (el.type === 'F') { totals.F += score; totals.countF += d.q; }
                         
-                        // Relevance: Average of D/P Alignment
-                        // Formula: (1-P)(-D) + P(D)
+                        // Relevance Calculation (Separate Metric)
+                        // How well does Presence match Desired?
                         const rScore = ((1 - d.p) * (-d.d)) + (d.p * d.d);
                         totals.R += (rScore * d.q);
                         totals.countR += d.q;
                     });
                 });
 
-                // Map -2 to +2 range -> 1 to 7 Grade
+                // Mapper: Converts Raw Averages (-2 to +2) into Final Grades (1 to 7)
                 const mapToGrade = (total, count, type) => {
                     if (count === 0) return "-";
                     const avg = total / count;
-                    const min = type === 'R' ? -1.0 : -2.0;
-                    const step = type === 'R' ? 0.4 : 0.8;
+                    const min = type === 'R' ? -1.0 : -2.0; // Relevance scale is tighter (-1 to 1)
                     const max = type === 'R' ? 1.0 : 2.0;
+                    const step = type === 'R' ? 0.4 : 0.8; // Step size for 5 middle grades
                     
                     if (avg <= min) return 1;
                     if (avg >= max) return 7;
@@ -385,14 +419,14 @@
                 };
             };
 
+            // Sorts sites for the Leaderboard
             const sortedSites = computed(() => {
                 const list = [];
                 for(let i=1; i<=6; i++) {
                     const scores = calculateSiteGrades(i);
-                    // Simple sort weight
+                    // Create a simple sum for sorting purposes
                     const val = (s) => s === "-" ? 0 : s;
                     const total = val(scores.relevance) + val(scores.aesthetics) + val(scores.functionality);
-                    
                     list.push({
                         id: i,
                         scores: scores,
@@ -403,16 +437,17 @@
                 return list.sort((a, b) => b.totalSort - a.totalSort);
             });
 
+            // Shortcut for the template to get current site's scores
             const getCurrentSiteScores = computed(() => calculateSiteGrades(currentTab.value));
 
-            // --- 5. STYLING HELPERS ---
+            // UI Helper: Adds Red Border to incomplete rows
             const getRowClass = (sIdx, eIdx) => {
                 const d = getDatum(sIdx, eIdx);
-                // Red background if incomplete (P=1, E=Null)
                 if (d.p == 1 && d.e === null) return "bg-red-50 border-l-4 border-l-red-400";
                 return "hover:bg-slate-50 border-l-4 border-l-transparent";
             };
 
+            // UI Helper: Colors the grade numbers (Green for good, Red for bad)
             const gradeColor = (g) => {
                 if (g === "-") return "text-slate-300 font-normal";
                 if (g >= 6) return "text-green-600 font-black";
