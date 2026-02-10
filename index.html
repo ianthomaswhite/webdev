@@ -60,34 +60,53 @@
         
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-6 border-b border-slate-100 bg-slate-50/50">
-                <h2 class="text-lg font-bold text-slate-800">Scoring Logic & 7-Point Map</h2>
+                <h2 class="text-lg font-bold text-slate-800">Scoring Variables & Logic</h2>
             </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-slate-50/50 border-b border-slate-100">
+                <div class="bg-white p-3 rounded border border-slate-200 shadow-sm">
+                    <div class="text-indigo-600 font-black text-lg mb-1">P</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Presence</div>
+                    <div class="text-xs text-slate-600 mt-1">Is the element on the page? (0 or 1)</div>
+                </div>
+                <div class="bg-white p-3 rounded border border-slate-200 shadow-sm">
+                    <div class="text-indigo-600 font-black text-lg mb-1">D</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Desired</div>
+                    <div class="text-xs text-slate-600 mt-1">Should it be there? (1, 0, or -1)</div>
+                </div>
+                <div class="bg-white p-3 rounded border border-slate-200 shadow-sm">
+                    <div class="text-indigo-600 font-black text-lg mb-1">E</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Execution</div>
+                    <div class="text-xs text-slate-600 mt-1">Quality of implementation (-2 to +2)</div>
+                </div>
+                <div class="bg-white p-3 rounded border border-slate-200 shadow-sm">
+                    <div class="text-indigo-600 font-black text-lg mb-1">M</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Multiplier</div>
+                    <div class="text-xs text-slate-600 mt-1">Importance weight (Default 1)</div>
+                </div>
+            </div>
+
             <div class="p-6 grid md:grid-cols-2 gap-8 text-sm text-slate-600 leading-relaxed">
                 <div>
-                    <h3 class="font-bold text-slate-900 mb-2">1. Aesthetics & Functionality</h3>
-                    <p class="text-xs mb-2">Calculated by Execution quality weighted by Multiplier.</p>
-                    <p class="mb-4 font-mono text-xs bg-slate-100 p-2 rounded border border-slate-200 text-blue-700">
-                        Score = M × [ (1 - P)(-D) + P(D + 0.5E) ]
-                    </p>
+                    <h3 class="font-bold text-slate-900 mb-2">Math Formulas</h3>
                     
-                    <h3 class="font-bold text-slate-900 mb-2 mt-6">2. Relevance</h3>
-                    <p class="text-xs mb-2">Calculated by alignment of Presence vs Desired.</p>
-                    <p class="mb-4 font-mono text-xs bg-slate-100 p-2 rounded border border-slate-200 text-green-700">
-                        Score = M × [ (1 - P)(-D) + P(D) ]
-                    </p>
-
-                    <div class="grid grid-cols-4 gap-2 text-xs font-mono mt-4">
-                        <div class="bg-slate-50 p-1 rounded text-center"><strong class="block">P</strong>Present</div>
-                        <div class="bg-slate-50 p-1 rounded text-center"><strong class="block">D</strong>Desired</div>
-                        <div class="bg-slate-50 p-1 rounded text-center"><strong class="block">E</strong>Execution</div>
-                        <div class="bg-slate-50 p-1 rounded text-center"><strong class="block">M</strong>Multiplier</div>
+                    <div class="mb-6">
+                        <strong class="text-xs uppercase text-slate-400">Aesthetics & Functionality</strong>
+                        <p class="font-mono text-xs bg-slate-100 p-2 rounded border border-slate-200 text-blue-700 mt-1">
+                            Score = M × [ (1 - P)(-D) + P(D + 0.5E) ]
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <strong class="text-xs uppercase text-slate-400">Relevance</strong>
+                        <p class="font-mono text-xs bg-slate-100 p-2 rounded border border-slate-200 text-green-700 mt-1">
+                            Score = M × [ (1 - P)(-D) + P(D) ]
+                        </p>
                     </div>
                 </div>
 
                 <div>
-                    <h3 class="font-bold text-slate-900 mb-2">3. The 7-Point Grading Scale</h3>
-                    <p class="text-xs mb-3">Raw weighted averages map to final grades:</p>
-                    
+                    <h3 class="font-bold text-slate-900 mb-2">The 7-Point Grading Scale</h3>
                     <div class="grid grid-cols-2 gap-4">
                         <table class="w-full text-xs text-left">
                             <thead><tr class="border-b border-slate-200"><th class="py-1">Aes/Func Avg</th><th class="py-1 text-right">Grade</th></tr></thead>
@@ -98,7 +117,7 @@
                                 <tr><td class="py-1">-0.4 to 0.4</td><td class="py-1 text-right font-bold text-slate-400">4</td></tr>
                                 <tr><td class="py-1">-1.2 to -0.4</td><td class="py-1 text-right font-bold text-orange-400">3</td></tr>
                                 <tr><td class="py-1">-2.0 to -1.2</td><td class="py-1 text-right font-bold text-red-500">2</td></tr>
-                                <tr><td class="py-1">< -2.0</td><td class="py-1 text-right font-bold text-red-700">1</td></tr>
+                                <tr><td class="py-1">< -2.0</td><td class="py-1 text-right font-black text-red-700 uppercase tracking-tighter">1 (BROKEN)</td></tr>
                             </tbody>
                         </table>
                         
@@ -111,7 +130,7 @@
                                 <tr><td class="py-1">-0.2 to 0.2</td><td class="py-1 text-right font-bold text-slate-400">4</td></tr>
                                 <tr><td class="py-1">-0.6 to -0.2</td><td class="py-1 text-right font-bold text-orange-400">3</td></tr>
                                 <tr><td class="py-1">-1.0 to -0.6</td><td class="py-1 text-right font-bold text-red-500">2</td></tr>
-                                <tr><td class="py-1">< -1.0</td><td class="py-1 text-right font-bold text-red-700">1</td></tr>
+                                <tr><td class="py-1">< -1.0</td><td class="py-1 text-right font-black text-red-700 uppercase tracking-tighter">1 (BROKEN)</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -223,14 +242,14 @@
                                     <input v-model="el.name" class="w-full bg-transparent border-none focus:ring-0 p-0 font-medium text-slate-700 placeholder-slate-400" placeholder="Element Name">
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    <select v-model="getDatum(sIndex, eIndex).p" class="w-full p-1.5 border border-slate-200 rounded text-center bg-white text-slate-700 focus:border-blue-500 outline-none cursor-pointer" :class="{'border-amber-300 bg-amber-50': getDatum(sIndex, eIndex).p === null}">
+                                    <select v-model="getDatum(sIndex, eIndex).p" class="w-full p-1.5 border border-slate-200 rounded text-center bg-white text-slate-700 focus:border-blue-500 outline-none cursor-pointer">
                                         <option :value="null" disabled selected>--</option>
-                                        <option :value="1">Yes</option>
-                                        <option :value="0">No</option>
+                                        <option :value="1">Yes (1)</option>
+                                        <option :value="0">No (0)</option>
                                     </select>
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    <select v-model="getDatum(sIndex, eIndex).d" class="w-full p-1.5 border border-slate-200 rounded text-center bg-white text-slate-700 focus:border-blue-500 outline-none cursor-pointer" :class="{'border-amber-300 bg-amber-50': getDatum(sIndex, eIndex).d === null}">
+                                    <select v-model="getDatum(sIndex, eIndex).d" class="w-full p-1.5 border border-slate-200 rounded text-center bg-white text-slate-700 focus:border-blue-500 outline-none cursor-pointer">
                                         <option :value="null" disabled selected>--</option>
                                         <option :value="1">Yes (1)</option>
                                         <option :value="0">MB (0)</option>
@@ -240,11 +259,11 @@
                                 <td class="px-4 py-3 text-center">
                                     <select v-if="getDatum(sIndex, eIndex).p == 1" v-model="getDatum(sIndex, eIndex).e" class="w-full p-1.5 border border-slate-200 rounded text-center bg-white text-slate-700 focus:border-blue-500 outline-none cursor-pointer" :class="{'border-red-300 bg-red-50': getDatum(sIndex, eIndex).e === null}">
                                         <option :value="null" disabled selected>--</option>
-                                        <option :value="2">High</option>
-                                        <option :value="1">Good</option>
-                                        <option :value="0">Avg</option>
-                                        <option :value="-1">Poor</option>
-                                        <option :value="-2">Toxic</option>
+                                        <option :value="2">High (+2)</option>
+                                        <option :value="1">Good (+1)</option>
+                                        <option :value="0">Avg (0)</option>
+                                        <option :value="-1">Poor (-1)</option>
+                                        <option :value="-2">Toxic (-2)</option>
                                     </select>
                                     <span v-else class="text-slate-300 font-mono">-</span>
                                 </td>
@@ -423,7 +442,7 @@
                     if (count === 0) return "-";
                     const avg = total / count;
                     
-                    // RELEVANCE MAPPING (Corrected for "Exact" top scores)
+                    // RELEVANCE MAPPING
                     if (type === 'R') {
                         if (avg >= 1.0) return 7;
                         if (avg >= 0.6) return 6;
@@ -477,7 +496,7 @@
 
             const getRowClass = (sIdx, eIdx) => {
                 const d = getDatum(sIdx, eIdx);
-                if (d.p === null || d.d === null) return "bg-amber-50 border-l-4 border-l-amber-300";
+                // Flag incomplete execution specifically
                 if (d.p == 1 && d.e === null) return "bg-red-50 border-l-4 border-l-red-400";
                 return "hover:bg-slate-50 border-l-4 border-l-transparent";
             };
