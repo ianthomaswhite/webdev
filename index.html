@@ -81,32 +81,45 @@
                 </div>
                 <div class="bg-white p-3 rounded border border-slate-200 shadow-sm">
                     <div class="text-indigo-600 font-black text-lg mb-1">M</div>
-                    <div class="text-xs font-bold uppercase text-slate-500">Multiplier</div>
-                    <div class="text-xs text-slate-600 mt-1">Importance weight (Default 1)</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Repeated Instances</div>
+                    <div class="text-xs text-slate-600 mt-1">How many times it appears</div>
                 </div>
             </div>
 
             <div class="p-6 grid md:grid-cols-2 gap-8 text-sm text-slate-600 leading-relaxed">
                 <div>
-                    <h3 class="font-bold text-slate-900 mb-2">Math Formulas</h3>
+                    <h3 class="font-bold text-slate-900 mb-2">A. Per-Element Score</h3>
+                    <p class="text-xs text-slate-500 mb-2">How each individual row is calculated:</p>
                     
-                    <div class="mb-6">
+                    <div class="mb-4">
                         <strong class="text-xs uppercase text-slate-400">Aesthetics & Functionality</strong>
                         <p class="font-mono text-xs bg-slate-100 p-2 rounded border border-slate-200 text-blue-700 mt-1">
                             Score = M × [ (1 - P)(-D) + P(D + 0.5E) ]
                         </p>
                     </div>
                     
-                    <div>
+                    <div class="mb-6">
                         <strong class="text-xs uppercase text-slate-400">Relevance</strong>
                         <p class="font-mono text-xs bg-slate-100 p-2 rounded border border-slate-200 text-green-700 mt-1">
                             Score = M × [ (1 - P)(-D) + P(D) ]
                         </p>
                     </div>
+
+                    <h3 class="font-bold text-slate-900 mb-2 pt-4 border-t border-slate-100">B. Overall Category Grade</h3>
+                    <p class="text-xs text-slate-500 mb-2">How the 1-7 score is derived from the elements:</p>
+                    <div class="text-xs bg-slate-50 p-3 rounded border border-slate-100">
+                        <ol class="list-decimal pl-4 space-y-1">
+                            <li><strong>Sum Scores:</strong> Add up all element scores.</li>
+                            <li><strong>Sum Counts:</strong> Add up all Multipliers (M).</li>
+                            <li><strong>Average:</strong> Total Score &div; Total M.</li>
+                            <li><strong>Map:</strong> Compare Average to the 7-Point Scale.</li>
+                        </ol>
+                    </div>
                 </div>
 
                 <div>
                     <h3 class="font-bold text-slate-900 mb-2">The 7-Point Grading Scale</h3>
+                    <p class="text-xs text-slate-500 mb-2">Maps the Category Average to a Grade:</p>
                     <div class="grid grid-cols-2 gap-4">
                         <table class="w-full text-xs text-left">
                             <thead><tr class="border-b border-slate-200"><th class="py-1">Aes/Func Avg</th><th class="py-1 text-right">Grade</th></tr></thead>
@@ -403,8 +416,8 @@
                         sec.elements.forEach((el, eIdx) => {
                             const d = siteData[i]?.[sIdx]?.[eIdx];
                             if (d) {
-                                if (d.p === null || d.d === null) count++;
-                                else if (d.p == 1 && d.e === null) count++;
+                                // Just check if P=1 and E=Null
+                                if (d.p == 1 && d.e === null) count++;
                             }
                         });
                     });
@@ -413,7 +426,7 @@
                 return counts;
             });
 
-            // UPDATED SCORING LOGIC
+            // SCORING LOGIC
             const calculateSiteGrades = (siteId) => {
                 let totals = { A: 0, F: 0, R: 0, countA: 0, countF: 0, countR: 0 };
                 
@@ -496,8 +509,9 @@
 
             const getRowClass = (sIdx, eIdx) => {
                 const d = getDatum(sIdx, eIdx);
-                // Flag incomplete execution specifically
+                // RED Highlight only for Present=Yes and Execution=Null
                 if (d.p == 1 && d.e === null) return "bg-red-50 border-l-4 border-l-red-400";
+                // Default White
                 return "hover:bg-slate-50 border-l-4 border-l-transparent";
             };
 
