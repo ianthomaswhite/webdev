@@ -416,8 +416,11 @@
                         sec.elements.forEach((el, eIdx) => {
                             const d = siteData[i]?.[sIdx]?.[eIdx];
                             if (d) {
-                                // Just check if P=1 and E=Null
-                                if (d.p == 1 && d.e === null) count++;
+                                // Count incomplete if:
+                                // 1. Presence or Desired is Null (User hasn't touched it)
+                                // 2. Presence is Yes (1) but Execution is Null (User hasn't graded it)
+                                if (d.p === null || d.d === null) count++;
+                                else if (d.p == 1 && d.e === null) count++;
                             }
                         });
                     });
@@ -426,7 +429,6 @@
                 return counts;
             });
 
-            // SCORING LOGIC
             const calculateSiteGrades = (siteId) => {
                 let totals = { A: 0, F: 0, R: 0, countA: 0, countF: 0, countR: 0 };
                 
@@ -455,7 +457,6 @@
                     if (count === 0) return "-";
                     const avg = total / count;
                     
-                    // RELEVANCE MAPPING
                     if (type === 'R') {
                         if (avg >= 1.0) return 7;
                         if (avg >= 0.6) return 6;
@@ -464,9 +465,7 @@
                         if (avg >= -0.6) return 3;
                         if (avg >= -1.0) return 2;
                         return 1;
-                    } 
-                    // AES/FUNC MAPPING
-                    else {
+                    } else {
                         if (avg >= 2.0) return 7;
                         if (avg >= 1.2) return 6;
                         if (avg >= 0.4) return 5;
@@ -509,9 +508,9 @@
 
             const getRowClass = (sIdx, eIdx) => {
                 const d = getDatum(sIdx, eIdx);
-                // RED Highlight only for Present=Yes and Execution=Null
+                // Red only if P=1 AND E=Null (User Forgot to Grade)
                 if (d.p == 1 && d.e === null) return "bg-red-50 border-l-4 border-l-red-400";
-                // Default White
+                // Otherwise White (Even if null/unopened)
                 return "hover:bg-slate-50 border-l-4 border-l-transparent";
             };
 
