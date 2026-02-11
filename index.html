@@ -20,280 +20,318 @@
 
 <div id="app" class="max-w-7xl mx-auto">
 
-    <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-200 pb-4">
-        <div>
-            <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Website Audit Tool</h1>
-            <p class="text-slate-500 mt-1">6-Site Comparative Analysis</p>
-        </div>
-        <div class="mt-4 md:mt-0 text-right">
-            <button @click="resetAll" class="text-xs font-semibold text-red-500 hover:text-red-700 bg-red-50 px-3 py-1 rounded border border-red-100 transition-colors">
-                Reset All Data
-            </button>
-        </div>
-    </header>
-
-    <div class="flex flex-wrap gap-2 mb-6 sticky top-0 bg-slate-50 z-20 py-2 border-b border-slate-200 shadow-sm">
-        <button 
-            @click="currentTab = 'dashboard'"
-            :class="['px-4 py-2 rounded-lg font-bold text-sm transition-all shadow-sm', currentTab === 'dashboard' ? 'bg-indigo-600 text-white ring-2 ring-indigo-600 ring-offset-2' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200']"
-        >
-            Leaderboard
-        </button>
-
-        <button 
-            v-for="i in 6" 
-            :key="i"
-            @click="currentTab = i"
-            :class="['relative px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2 shadow-sm', 
-                currentTab === i ? 'bg-blue-600 text-white ring-2 ring-blue-600 ring-offset-2' : 
-                siteHidden[i] ? 'bg-slate-100 text-slate-400 border border-slate-200' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200']"
-        >
-            Site {{ i }}
-            <span v-if="siteHidden[i]" class="text-[10px] uppercase bg-slate-200 px-1 rounded ml-1">Hidden</span>
-            <span v-if="!siteHidden[i] && siteIncompleteCounts[i] > 0" class="flex items-center justify-center bg-red-500 text-white text-[10px] h-5 min-w-[1.25rem] px-1 rounded-full font-bold ml-1 shadow-sm">
-                {{ siteIncompleteCounts[i] }}
-            </span>
-        </button>
-    </div>
-
-    <div v-if="currentTab === 'dashboard'" class="animate-fade-in space-y-8">
-        
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-6 border-b border-slate-100 bg-slate-50/50">
-                <h2 class="text-lg font-bold text-slate-800">Scoring Variables & Logic</h2>
+    <div v-if="!isAuthenticated" class="min-h-[80vh] flex flex-col items-center justify-center animate-fade-in">
+        <div class="bg-white p-10 rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm text-center">
+            <div class="mb-6">
+                <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-800">Restricted Access</h1>
+                <p class="text-slate-500 text-sm mt-2">Please enter the password to continue.</p>
             </div>
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-slate-50/50 border-b border-slate-100">
-                <div class="bg-white p-3 rounded border border-slate-200 shadow-sm">
-                    <div class="text-indigo-600 font-black text-lg mb-1">P</div>
-                    <div class="text-xs font-bold uppercase text-slate-500">Presence</div>
-                    <div class="text-xs text-slate-600 mt-1">Is the element on the page? (0 or 1)</div>
-                </div>
-                <div class="bg-white p-3 rounded border border-slate-200 shadow-sm">
-                    <div class="text-indigo-600 font-black text-lg mb-1">D</div>
-                    <div class="text-xs font-bold uppercase text-slate-500">Desired</div>
-                    <div class="text-xs text-slate-600 mt-1">Should it be there? (1, 0, or -1)</div>
-                </div>
-                <div class="bg-white p-3 rounded border border-slate-200 shadow-sm">
-                    <div class="text-indigo-600 font-black text-lg mb-1">E</div>
-                    <div class="text-xs font-bold uppercase text-slate-500">Execution</div>
-                    <div class="text-xs text-slate-600 mt-1">Quality of implementation (-2 to +2)</div>
-                </div>
-                <div class="bg-white p-3 rounded border border-slate-200 shadow-sm">
-                    <div class="text-indigo-600 font-black text-lg mb-1">M</div>
-                    <div class="text-xs font-bold uppercase text-slate-500">Repeated Instances</div>
-                    <div class="text-xs text-slate-600 mt-1">How many times it appears</div>
-                </div>
-            </div>
-
-            <div class="p-6 grid md:grid-cols-2 gap-8 text-sm text-slate-600 leading-relaxed">
-                <div>
-                    <h3 class="font-bold text-slate-900 mb-2">A. Per-Element Score</h3>
-                    <p class="text-xs text-slate-500 mb-2">How each individual row is calculated:</p>
-                    
-                    <div class="mb-4">
-                        <strong class="text-xs uppercase text-slate-400">Aesthetics & Functionality</strong>
-                        <p class="font-mono text-xs bg-slate-100 p-2 rounded border border-slate-200 text-blue-700 mt-1">
-                            Score = M × [ (1 - P)(-D) + P(D + 0.5E) ]
-                        </p>
-                    </div>
-                    
-                    <div class="mb-6">
-                        <strong class="text-xs uppercase text-slate-400">Relevance</strong>
-                        <p class="font-mono text-xs bg-slate-100 p-2 rounded border border-slate-200 text-green-700 mt-1">
-                            Score = M × [ (1 - P)(-D) + P(D) ]
-                        </p>
-                    </div>
-
-                    <h3 class="font-bold text-slate-900 mb-2 pt-4 border-t border-slate-100">B. Overall Category Grade</h3>
-                    <p class="text-xs text-slate-500 mb-2">How the 1-7 score is derived from the elements:</p>
-                    <div class="text-xs bg-slate-50 p-3 rounded border border-slate-100">
-                        <ol class="list-decimal pl-4 space-y-1">
-                            <li><strong>Sum Scores:</strong> Add up all element scores.</li>
-                            <li><strong>Sum Counts:</strong> Add up all Multipliers (M).</li>
-                            <li><strong>Average:</strong> Total Score &div; Total M.</li>
-                            <li><strong>Map:</strong> Compare Average to the 7-Point Scale.</li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div>
-                    <h3 class="font-bold text-slate-900 mb-2">The 7-Point Grading Scale</h3>
-                    <p class="text-xs text-slate-500 mb-2">Maps the Category Average to a Grade:</p>
-                    <div class="grid grid-cols-2 gap-4">
-                        <table class="w-full text-xs text-left">
-                            <thead><tr class="border-b border-slate-200"><th class="py-1">Aes/Func Avg</th><th class="py-1 text-right">Grade</th></tr></thead>
-                            <tbody class="divide-y divide-slate-100">
-                                <tr><td class="py-1">Exactly 2.0</td><td class="py-1 text-right font-bold text-green-600">7</td></tr>
-                                <tr><td class="py-1">1.2 to 2.0</td><td class="py-1 text-right font-bold text-green-500">6</td></tr>
-                                <tr><td class="py-1">0.4 to 1.2</td><td class="py-1 text-right font-bold text-slate-600">5</td></tr>
-                                <tr><td class="py-1">-0.4 to 0.4</td><td class="py-1 text-right font-bold text-slate-400">4</td></tr>
-                                <tr><td class="py-1">-1.2 to -0.4</td><td class="py-1 text-right font-bold text-orange-400">3</td></tr>
-                                <tr><td class="py-1">-2.0 to -1.2</td><td class="py-1 text-right font-bold text-red-500">2</td></tr>
-                                <tr><td class="py-1">< -2.0</td><td class="py-1 text-right font-black text-red-700 uppercase tracking-tighter">1 (BROKEN)</td></tr>
-                            </tbody>
-                        </table>
-                        
-                        <table class="w-full text-xs text-left">
-                            <thead><tr class="border-b border-slate-200"><th class="py-1">Relevance Avg</th><th class="py-1 text-right">Grade</th></tr></thead>
-                            <tbody class="divide-y divide-slate-100">
-                                <tr><td class="py-1">Exactly 1.0</td><td class="py-1 text-right font-bold text-green-600">7</td></tr>
-                                <tr><td class="py-1">0.6 to 1.0</td><td class="py-1 text-right font-bold text-green-500">6</td></tr>
-                                <tr><td class="py-1">0.2 to 0.6</td><td class="py-1 text-right font-bold text-slate-600">5</td></tr>
-                                <tr><td class="py-1">-0.2 to 0.2</td><td class="py-1 text-right font-bold text-slate-400">4</td></tr>
-                                <tr><td class="py-1">-0.6 to -0.2</td><td class="py-1 text-right font-bold text-orange-400">3</td></tr>
-                                <tr><td class="py-1">-1.0 to -0.6</td><td class="py-1 text-right font-bold text-red-500">2</td></tr>
-                                <tr><td class="py-1">< -1.0</td><td class="py-1 text-right font-black text-red-700 uppercase tracking-tighter">1 (BROKEN)</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-6 bg-slate-50 border-b border-slate-200">
-                <h2 class="text-xl font-bold text-slate-800">Live Rankings</h2>
-                <p class="text-xs text-slate-400 mt-1">Hidden sites are excluded from rankings.</p>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead>
-                        <tr class="bg-slate-100 text-slate-500 uppercase tracking-wider font-semibold text-xs">
-                            <th class="p-4 w-16 text-center">Rank</th>
-                            <th class="p-4">Site Name</th>
-                            <th class="p-4 text-center w-32">Relevance</th>
-                            <th class="p-4 text-center w-32">Aesthetics</th>
-                            <th class="p-4 text-center w-32">Functionality</th>
-                            <th class="p-4 text-right">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <tr v-for="(site, index) in sortedSites" :key="site.id" class="hover:bg-slate-50 transition-colors group">
-                            <td class="p-4 text-center font-bold text-slate-400 group-hover:text-indigo-600">#{{ index + 1 }}</td>
-                            <td class="p-4 font-bold text-slate-800">Site {{ site.id }}</td>
-                            <td class="p-4 text-center"><span :class="gradeColor(site.scores.relevance)">{{ site.scores.relevance }}</span></td>
-                            <td class="p-4 text-center"><span :class="gradeColor(site.scores.aesthetics)">{{ site.scores.aesthetics }}</span></td>
-                            <td class="p-4 text-center"><span :class="gradeColor(site.scores.functionality)">{{ site.scores.functionality }}</span></td>
-                            <td class="p-4 text-right">
-                                <span v-if="site.status === 'unopened'" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">Not Opened</span>
-                                <span v-else-if="site.incomplete > 0" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">{{ site.incomplete }} Missing</span>
-                                <span v-else class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">Complete</span>
-                            </td>
-                        </tr>
-                        <tr v-if="sortedSites.length === 0" class="bg-slate-50">
-                            <td colspan="6" class="p-8 text-center text-slate-400 italic">All sites are hidden.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <form @submit.prevent="login" class="space-y-4">
+                <input 
+                    type="password" 
+                    v-model="passwordInput" 
+                    placeholder="Password" 
+                    class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    autofocus
+                >
+                <button 
+                    type="submit" 
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 duration-150"
+                >
+                    Unlock Dashboard
+                </button>
+            </form>
+            
+            <p v-if="loginError" class="mt-4 text-red-500 text-sm font-bold bg-red-50 py-2 rounded animate-pulse">
+                Incorrect Password
+            </p>
         </div>
     </div>
 
     <div v-else class="animate-fade-in">
         
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-slate-800">Site {{ currentTab }} Audit</h2>
+        <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-200 pb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Website Audit Tool</h1>
+                <p class="text-slate-500 mt-1">6-Site Comparative Analysis</p>
+            </div>
+            <div class="mt-4 md:mt-0 text-right flex gap-3">
+                <button @click="logout" class="text-xs font-semibold text-slate-400 hover:text-slate-600 px-3 py-1">
+                    Lock Tool
+                </button>
+                <button @click="resetAll" class="text-xs font-semibold text-red-500 hover:text-red-700 bg-red-50 px-3 py-1 rounded border border-red-100 transition-colors">
+                    Reset All Data
+                </button>
+            </div>
+        </header>
+
+        <div class="flex flex-wrap gap-2 mb-6 sticky top-0 bg-slate-50 z-20 py-2 border-b border-slate-200 shadow-sm">
             <button 
-                @click="toggleSiteVisibility(currentTab)" 
-                :class="['px-4 py-2 rounded text-xs font-bold uppercase tracking-wider transition-colors', siteHidden[currentTab] ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' : 'bg-slate-200 text-slate-600 hover:bg-slate-300']"
+                @click="currentTab = 'dashboard'"
+                :class="['px-4 py-2 rounded-lg font-bold text-sm transition-all shadow-sm', currentTab === 'dashboard' ? 'bg-indigo-600 text-white ring-2 ring-indigo-600 ring-offset-2' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200']"
             >
-                {{ siteHidden[currentTab] ? 'Unhide This Site' : 'Hide This Site' }}
+                Leaderboard
+            </button>
+
+            <button 
+                v-for="i in 6" 
+                :key="i"
+                @click="currentTab = i"
+                :class="['relative px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2 shadow-sm', 
+                    currentTab === i ? 'bg-blue-600 text-white ring-2 ring-blue-600 ring-offset-2' : 
+                    siteHidden[i] ? 'bg-slate-100 text-slate-400 border border-slate-200' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200']"
+            >
+                Site {{ i }}
+                <span v-if="siteHidden[i]" class="text-[10px] uppercase bg-slate-200 px-1 rounded ml-1">Hidden</span>
+                <span v-if="!siteHidden[i] && siteIncompleteCounts[i] > 0" class="flex items-center justify-center bg-red-500 text-white text-[10px] h-5 min-w-[1.25rem] px-1 rounded-full font-bold ml-1 shadow-sm">
+                    {{ siteIncompleteCounts[i] }}
+                </span>
             </button>
         </div>
 
-        <div v-if="siteHidden[currentTab]" class="bg-slate-100 border-2 border-dashed border-slate-300 rounded-xl p-12 text-center">
-            <p class="text-slate-500 font-bold">This site is currently hidden from calculations.</p>
-            <button @click="toggleSiteVisibility(currentTab)" class="mt-4 text-indigo-600 underline text-sm hover:text-indigo-800">Unhide to resume grading</button>
-        </div>
+        <div v-if="currentTab === 'dashboard'" class="animate-fade-in space-y-8">
+            
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+                    <h2 class="text-lg font-bold text-slate-800">Scoring Variables & Logic</h2>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-slate-50/50 border-b border-slate-100">
+                    <div class="bg-white p-3 rounded border border-slate-200 shadow-sm">
+                        <div class="text-indigo-600 font-black text-lg mb-1">P</div>
+                        <div class="text-xs font-bold uppercase text-slate-500">Presence</div>
+                        <div class="text-xs text-slate-600 mt-1">Is the element on the page? (0 or 1)</div>
+                    </div>
+                    <div class="bg-white p-3 rounded border border-slate-200 shadow-sm">
+                        <div class="text-indigo-600 font-black text-lg mb-1">D</div>
+                        <div class="text-xs font-bold uppercase text-slate-500">Desired</div>
+                        <div class="text-xs text-slate-600 mt-1">Should it be there? (1, 0, or -1)</div>
+                    </div>
+                    <div class="bg-white p-3 rounded border border-slate-200 shadow-sm">
+                        <div class="text-indigo-600 font-black text-lg mb-1">E</div>
+                        <div class="text-xs font-bold uppercase text-slate-500">Execution</div>
+                        <div class="text-xs text-slate-600 mt-1">Quality of implementation (-2 to +2)</div>
+                    </div>
+                    <div class="bg-white p-3 rounded border border-slate-200 shadow-sm">
+                        <div class="text-indigo-600 font-black text-lg mb-1">M</div>
+                        <div class="text-xs font-bold uppercase text-slate-500">Repeated Instances</div>
+                        <div class="text-xs text-slate-600 mt-1">How many times it appears</div>
+                    </div>
+                </div>
 
-        <div v-else>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                <div v-for="metric in ['Relevance', 'Aesthetics', 'Functionality']" :key="metric" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center justify-center">
-                    <span class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">{{ metric }}</span>
-                    <span class="text-5xl font-black text-slate-800 tracking-tighter">{{ getCurrentSiteScores[metric.toLowerCase()] }}</span>
+                <div class="p-6 grid md:grid-cols-2 gap-8 text-sm text-slate-600 leading-relaxed">
+                    <div>
+                        <h3 class="font-bold text-slate-900 mb-2">A. Per-Element Score</h3>
+                        <p class="text-xs text-slate-500 mb-2">How each individual row is calculated:</p>
+                        
+                        <div class="mb-4">
+                            <strong class="text-xs uppercase text-slate-400">Aesthetics & Functionality</strong>
+                            <p class="font-mono text-xs bg-slate-100 p-2 rounded border border-slate-200 text-blue-700 mt-1">
+                                Score = M × [ (1 - P)(-D) + P(D + 0.5E) ]
+                            </p>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <strong class="text-xs uppercase text-slate-400">Relevance</strong>
+                            <p class="font-mono text-xs bg-slate-100 p-2 rounded border border-slate-200 text-green-700 mt-1">
+                                Score = M × [ (1 - P)(-D) + P(D) ]
+                            </p>
+                        </div>
+
+                        <h3 class="font-bold text-slate-900 mb-2 pt-4 border-t border-slate-100">B. Overall Category Grade</h3>
+                        <p class="text-xs text-slate-500 mb-2">How the 1-7 score is derived from the elements:</p>
+                        <div class="text-xs bg-slate-50 p-3 rounded border border-slate-100">
+                            <ol class="list-decimal pl-4 space-y-1">
+                                <li><strong>Sum Scores:</strong> Add up all element scores.</li>
+                                <li><strong>Sum Counts:</strong> Add up all Multipliers (M).</li>
+                                <li><strong>Average:</strong> Total Score &div; Total M.</li>
+                                <li><strong>Map:</strong> Compare Average to the 7-Point Scale.</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-slate-900 mb-2">The 7-Point Grading Scale</h3>
+                        <p class="text-xs text-slate-500 mb-2">Maps the Category Average to a Grade:</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <table class="w-full text-xs text-left">
+                                <thead><tr class="border-b border-slate-200"><th class="py-1">Aes/Func Avg</th><th class="py-1 text-right">Grade</th></tr></thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr><td class="py-1">Exactly 2.0</td><td class="py-1 text-right font-bold text-green-600">7</td></tr>
+                                    <tr><td class="py-1">1.2 to 2.0</td><td class="py-1 text-right font-bold text-green-500">6</td></tr>
+                                    <tr><td class="py-1">0.4 to 1.2</td><td class="py-1 text-right font-bold text-slate-600">5</td></tr>
+                                    <tr><td class="py-1">-0.4 to 0.4</td><td class="py-1 text-right font-bold text-slate-400">4</td></tr>
+                                    <tr><td class="py-1">-1.2 to -0.4</td><td class="py-1 text-right font-bold text-orange-400">3</td></tr>
+                                    <tr><td class="py-1">-2.0 to -1.2</td><td class="py-1 text-right font-bold text-red-500">2</td></tr>
+                                    <tr><td class="py-1">< -2.0</td><td class="py-1 text-right font-black text-red-700 uppercase tracking-tighter">1 (BROKEN)</td></tr>
+                                </tbody>
+                            </table>
+                            
+                            <table class="w-full text-xs text-left">
+                                <thead><tr class="border-b border-slate-200"><th class="py-1">Relevance Avg</th><th class="py-1 text-right">Grade</th></tr></thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr><td class="py-1">Exactly 1.0</td><td class="py-1 text-right font-bold text-green-600">7</td></tr>
+                                    <tr><td class="py-1">0.6 to 1.0</td><td class="py-1 text-right font-bold text-green-500">6</td></tr>
+                                    <tr><td class="py-1">0.2 to 0.6</td><td class="py-1 text-right font-bold text-slate-600">5</td></tr>
+                                    <tr><td class="py-1">-0.2 to 0.2</td><td class="py-1 text-right font-bold text-slate-400">4</td></tr>
+                                    <tr><td class="py-1">-0.6 to -0.2</td><td class="py-1 text-right font-bold text-orange-400">3</td></tr>
+                                    <tr><td class="py-1">-1.0 to -0.6</td><td class="py-1 text-right font-bold text-red-500">2</td></tr>
+                                    <tr><td class="py-1">< -1.0</td><td class="py-1 text-right font-black text-red-700 uppercase tracking-tighter">1 (BROKEN)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div v-for="(section, sIndex) in blueprint" :key="section.id" :class="['mb-8 bg-white rounded-xl shadow-sm border overflow-hidden transition-all', section.hidden ? 'border-slate-200 opacity-60' : 'border-slate-200']">
-                
-                <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div class="flex items-center gap-4">
-                        <button @click="section.hidden = !section.hidden" class="text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-600 border border-slate-200 rounded px-2 py-1 transition-colors">
-                            {{ section.hidden ? 'Show Section' : 'Hide Section' }}
-                        </button>
-                        <h3 :class="['font-bold text-lg', section.hidden ? 'text-slate-400 line-through' : 'text-slate-800']">
-                            {{ section.name }} <span v-if="section.hidden" class="text-xs font-normal ml-2 bg-slate-100 px-2 py-0.5 rounded text-slate-400 no-underline">Excluded</span>
-                        </h3>
-                    </div>
-                    <div v-if="!section.hidden" class="flex gap-2">
-                        <button @click="addElement(sIndex, 'A')" class="px-3 py-1.5 text-xs font-bold bg-white text-blue-600 border border-blue-200 rounded hover:bg-blue-50 transition-colors shadow-sm">+ Add Aesthetic</button>
-                        <button @click="addElement(sIndex, 'F')" class="px-3 py-1.5 text-xs font-bold bg-white text-green-600 border border-green-200 rounded hover:bg-green-50 transition-colors shadow-sm">+ Add Functional</button>
-                    </div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-6 bg-slate-50 border-b border-slate-200">
+                    <h2 class="text-xl font-bold text-slate-800">Live Rankings</h2>
+                    <p class="text-xs text-slate-400 mt-1">Hidden sites are excluded from rankings.</p>
                 </div>
-
-                <div v-if="!section.hidden" class="overflow-x-auto">
-                    <table class="w-full text-left text-sm min-w-[800px]">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
                         <thead>
-                            <tr class="bg-white border-b border-slate-100 text-xs text-slate-400 uppercase tracking-wider">
-                                <th class="px-6 py-3 w-24">Type</th>
-                                <th class="px-6 py-3">Element Name</th>
-                                <th class="px-4 py-3 w-28 text-center">Present (P)</th>
-                                <th class="px-4 py-3 w-32 text-center">Desired (D)</th>
-                                <th class="px-4 py-3 w-32 text-center">Execution (E)</th>
-                                <th class="px-4 py-3 w-24 text-center">Mult (M)</th>
-                                <th class="px-6 py-3 w-20 text-right">Score</th>
-                                <th class="px-4 py-3 w-12"></th>
+                            <tr class="bg-slate-100 text-slate-500 uppercase tracking-wider font-semibold text-xs">
+                                <th class="p-4 w-16 text-center">Rank</th>
+                                <th class="p-4">Site Name</th>
+                                <th class="p-4 text-center w-32">Relevance</th>
+                                <th class="p-4 text-center w-32">Aesthetics</th>
+                                <th class="p-4 text-center w-32">Functionality</th>
+                                <th class="p-4 text-right">Status</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-50">
-                            <tr v-for="(el, eIndex) in section.elements" :key="eIndex" :class="getRowClass(sIndex, eIndex)">
-                                <td class="px-6 py-3">
-                                    <span :class="['inline-flex items-center px-2 py-1 rounded text-xs font-bold', el.type === 'A' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700']">{{ el.type }}</span>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr v-for="(site, index) in sortedSites" :key="site.id" class="hover:bg-slate-50 transition-colors group">
+                                <td class="p-4 text-center font-bold text-slate-400 group-hover:text-indigo-600">#{{ index + 1 }}</td>
+                                <td class="p-4 font-bold text-slate-800">Site {{ site.id }}</td>
+                                <td class="p-4 text-center"><span :class="gradeColor(site.scores.relevance)">{{ site.scores.relevance }}</span></td>
+                                <td class="p-4 text-center"><span :class="gradeColor(site.scores.aesthetics)">{{ site.scores.aesthetics }}</span></td>
+                                <td class="p-4 text-center"><span :class="gradeColor(site.scores.functionality)">{{ site.scores.functionality }}</span></td>
+                                <td class="p-4 text-right">
+                                    <span v-if="site.status === 'unopened'" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">Not Opened</span>
+                                    <span v-else-if="site.incomplete > 0" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">{{ site.incomplete }} Missing</span>
+                                    <span v-else class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">Complete</span>
                                 </td>
-                                <td class="px-6 py-3">
-                                    <input v-model="el.name" class="w-full bg-transparent border-none focus:ring-0 p-0 font-medium text-slate-700 placeholder-slate-400" placeholder="Element Name">
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <select v-model="getDatum(sIndex, eIndex).p" class="w-full p-1.5 border border-slate-200 rounded text-center bg-white text-slate-700 focus:border-blue-500 outline-none cursor-pointer">
-                                        <option :value="null" disabled selected>--</option>
-                                        <option :value="1">Yes (1)</option>
-                                        <option :value="0">No (0)</option>
-                                    </select>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <select v-model="getDatum(sIndex, eIndex).d" class="w-full p-1.5 border border-slate-200 rounded text-center bg-white text-slate-700 focus:border-blue-500 outline-none cursor-pointer">
-                                        <option :value="null" disabled selected>--</option>
-                                        <option :value="1">Yes (1)</option>
-                                        <option :value="0">MB (0)</option>
-                                        <option :value="-1">No (-1)</option>
-                                    </select>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <select v-if="getDatum(sIndex, eIndex).p == 1" v-model="getDatum(sIndex, eIndex).e" class="w-full p-1.5 border border-slate-200 rounded text-center bg-white text-slate-700 focus:border-blue-500 outline-none cursor-pointer" :class="{'border-red-300 bg-red-50': getDatum(sIndex, eIndex).e === null}">
-                                        <option :value="null" disabled selected>--</option>
-                                        <option :value="2">High (+2)</option>
-                                        <option :value="1">Good (+1)</option>
-                                        <option :value="0">Avg (0)</option>
-                                        <option :value="-1">Poor (-1)</option>
-                                        <option :value="-2">Toxic (-2)</option>
-                                    </select>
-                                    <span v-else class="text-slate-300 font-mono">-</span>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <input type="number" min="0" v-model="getDatum(sIndex, eIndex).q" class="w-16 p-1.5 text-center border border-slate-200 rounded text-slate-700 focus:border-blue-500 outline-none transition-colors">
-                                </td>
-                                <td class="px-6 py-3 text-right font-mono font-bold text-slate-500">
-                                    {{ calculateRowScore(getDatum(sIndex, eIndex)) }}
-                                </td>
-                                <td class="px-4 py-3 text-right">
-                                    <button @click="removeElement(sIndex, eIndex)" class="text-slate-300 hover:text-red-500 hover:bg-red-50 w-8 h-8 rounded-full flex items-center justify-center transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    </button>
-                                </td>
+                            </tr>
+                            <tr v-if="sortedSites.length === 0" class="bg-slate-50">
+                                <td colspan="6" class="p-8 text-center text-slate-400 italic">All sites are hidden.</td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <div v-else class="animate-fade-in">
+            
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">Site {{ currentTab }} Audit</h2>
+                <button 
+                    @click="toggleSiteVisibility(currentTab)" 
+                    :class="['px-4 py-2 rounded text-xs font-bold uppercase tracking-wider transition-colors', siteHidden[currentTab] ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' : 'bg-slate-200 text-slate-600 hover:bg-slate-300']"
+                >
+                    {{ siteHidden[currentTab] ? 'Unhide This Site' : 'Hide This Site' }}
+                </button>
+            </div>
+
+            <div v-if="siteHidden[currentTab]" class="bg-slate-100 border-2 border-dashed border-slate-300 rounded-xl p-12 text-center">
+                <p class="text-slate-500 font-bold">This site is currently hidden from calculations.</p>
+                <button @click="toggleSiteVisibility(currentTab)" class="mt-4 text-indigo-600 underline text-sm hover:text-indigo-800">Unhide to resume grading</button>
+            </div>
+
+            <div v-else>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                    <div v-for="metric in ['Relevance', 'Aesthetics', 'Functionality']" :key="metric" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center justify-center">
+                        <span class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">{{ metric }}</span>
+                        <span class="text-5xl font-black text-slate-800 tracking-tighter">{{ getCurrentSiteScores[metric.toLowerCase()] }}</span>
+                    </div>
+                </div>
+
+                <div v-for="(section, sIndex) in blueprint" :key="section.id" :class="['mb-8 bg-white rounded-xl shadow-sm border overflow-hidden transition-all', section.hidden ? 'border-slate-200 opacity-60' : 'border-slate-200']">
+                    
+                    <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div class="flex items-center gap-4">
+                            <button @click="section.hidden = !section.hidden" class="text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-600 border border-slate-200 rounded px-2 py-1 transition-colors">
+                                {{ section.hidden ? 'Show Section' : 'Hide Section' }}
+                            </button>
+                            <h3 :class="['font-bold text-lg', section.hidden ? 'text-slate-400 line-through' : 'text-slate-800']">
+                                {{ section.name }} <span v-if="section.hidden" class="text-xs font-normal ml-2 bg-slate-100 px-2 py-0.5 rounded text-slate-400 no-underline">Excluded</span>
+                            </h3>
+                        </div>
+                        <div v-if="!section.hidden" class="flex gap-2">
+                            <button @click="addElement(sIndex, 'A')" class="px-3 py-1.5 text-xs font-bold bg-white text-blue-600 border border-blue-200 rounded hover:bg-blue-50 transition-colors shadow-sm">+ Add Aesthetic</button>
+                            <button @click="addElement(sIndex, 'F')" class="px-3 py-1.5 text-xs font-bold bg-white text-green-600 border border-green-200 rounded hover:bg-green-50 transition-colors shadow-sm">+ Add Functional</button>
+                        </div>
+                    </div>
+
+                    <div v-if="!section.hidden" class="overflow-x-auto">
+                        <table class="w-full text-left text-sm min-w-[800px]">
+                            <thead>
+                                <tr class="bg-white border-b border-slate-100 text-xs text-slate-400 uppercase tracking-wider">
+                                    <th class="px-6 py-3 w-24">Type</th>
+                                    <th class="px-6 py-3">Element Name</th>
+                                    <th class="px-4 py-3 w-28 text-center">Present (P)</th>
+                                    <th class="px-4 py-3 w-32 text-center">Desired (D)</th>
+                                    <th class="px-4 py-3 w-32 text-center">Execution (E)</th>
+                                    <th class="px-4 py-3 w-24 text-center">Mult (M)</th>
+                                    <th class="px-6 py-3 w-20 text-right">Score</th>
+                                    <th class="px-4 py-3 w-12"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                                <tr v-for="(el, eIndex) in section.elements" :key="eIndex" :class="getRowClass(sIndex, eIndex)">
+                                    <td class="px-6 py-3">
+                                        <span :class="['inline-flex items-center px-2 py-1 rounded text-xs font-bold', el.type === 'A' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700']">{{ el.type }}</span>
+                                    </td>
+                                    <td class="px-6 py-3">
+                                        <input v-model="el.name" class="w-full bg-transparent border-none focus:ring-0 p-0 font-medium text-slate-700 placeholder-slate-400" placeholder="Element Name">
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <select v-model="getDatum(sIndex, eIndex).p" class="w-full p-1.5 border border-slate-200 rounded text-center bg-white text-slate-700 focus:border-blue-500 outline-none cursor-pointer">
+                                            <option :value="null" disabled selected>--</option>
+                                            <option :value="1">Yes (1)</option>
+                                            <option :value="0">No (0)</option>
+                                        </select>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <select v-model="getDatum(sIndex, eIndex).d" class="w-full p-1.5 border border-slate-200 rounded text-center bg-white text-slate-700 focus:border-blue-500 outline-none cursor-pointer">
+                                            <option :value="null" disabled selected>--</option>
+                                            <option :value="1">Yes (1)</option>
+                                            <option :value="0">MB (0)</option>
+                                            <option :value="-1">No (-1)</option>
+                                        </select>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <select v-if="getDatum(sIndex, eIndex).p == 1" v-model="getDatum(sIndex, eIndex).e" class="w-full p-1.5 border border-slate-200 rounded text-center bg-white text-slate-700 focus:border-blue-500 outline-none cursor-pointer" :class="{'border-red-300 bg-red-50': getDatum(sIndex, eIndex).e === null}">
+                                            <option :value="null" disabled selected>--</option>
+                                            <option :value="2">High (+2)</option>
+                                            <option :value="1">Good (+1)</option>
+                                            <option :value="0">Avg (0)</option>
+                                            <option :value="-1">Poor (-1)</option>
+                                            <option :value="-2">Toxic (-2)</option>
+                                        </select>
+                                        <span v-else class="text-slate-300 font-mono">-</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <input type="number" min="0" v-model="getDatum(sIndex, eIndex).q" class="w-16 p-1.5 text-center border border-slate-200 rounded text-slate-700 focus:border-blue-500 outline-none transition-colors">
+                                    </td>
+                                    <td class="px-6 py-3 text-right font-mono font-bold text-slate-500">
+                                        {{ calculateRowScore(getDatum(sIndex, eIndex)) }}
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button @click="removeElement(sIndex, eIndex)" class="text-slate-300 hover:text-red-500 hover:bg-red-50 w-8 h-8 rounded-full flex items-center justify-center transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -305,7 +343,26 @@
 
     createApp({
         setup() {
-            // Blueprint
+            // LOGIN STATE
+            const isAuthenticated = ref(false);
+            const passwordInput = ref('');
+            const loginError = ref(false);
+
+            const login = () => {
+                if(passwordInput.value === 'audit') {
+                    isAuthenticated.value = true;
+                    loginError.value = false;
+                } else {
+                    loginError.value = true;
+                    passwordInput.value = '';
+                }
+            };
+            const logout = () => {
+                isAuthenticated.value = false;
+                passwordInput.value = '';
+            };
+
+            // BLUEPRINT
             const blueprint = reactive([
                 { id: "sitewide", name: "1. Sitewide (Global)", hidden: false, elements: [
                     { name: "Logo (Visual)", type: "A" }, { name: "Global Font / Typography", type: "A" }, 
@@ -416,9 +473,9 @@
                         sec.elements.forEach((el, eIdx) => {
                             const d = siteData[i]?.[sIdx]?.[eIdx];
                             if (d) {
-                                // Count incomplete if:
-                                // 1. Presence or Desired is Null (User hasn't touched it)
-                                // 2. Presence is Yes (1) but Execution is Null (User hasn't graded it)
+                                // Incomplete Logic:
+                                // 1. P or D is Null (Not started)
+                                // 2. P=1 but E=Null (Execution missing)
                                 if (d.p === null || d.d === null) count++;
                                 else if (d.p == 1 && d.e === null) count++;
                             }
@@ -508,9 +565,8 @@
 
             const getRowClass = (sIdx, eIdx) => {
                 const d = getDatum(sIdx, eIdx);
-                // Red only if P=1 AND E=Null (User Forgot to Grade)
+                // Highlight Red if Missing Execution info when Present
                 if (d.p == 1 && d.e === null) return "bg-red-50 border-l-4 border-l-red-400";
-                // Otherwise White (Even if null/unopened)
                 return "hover:bg-slate-50 border-l-4 border-l-transparent";
             };
 
@@ -522,6 +578,7 @@
             };
 
             return {
+                isAuthenticated, passwordInput, login, logout, loginError,
                 currentTab, blueprint, getDatum, calculateRowScore, addElement, removeElement, resetAll,
                 siteIncompleteCounts, sortedSites, getCurrentSiteScores, getRowClass, gradeColor,
                 siteHidden, toggleSiteVisibility
