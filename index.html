@@ -256,6 +256,10 @@
                     
                     <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div class="flex items-center gap-4">
+                            <button @click="removeSection(sIndex)" class="text-slate-300 hover:text-red-500 transition-colors" title="Delete Section from ALL Sites">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+
                             <button @click="section.hidden = !section.hidden" class="text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-600 border border-slate-200 rounded px-2 py-1 transition-colors">
                                 {{ section.hidden ? 'Show Section' : 'Hide Section' }}
                             </button>
@@ -332,6 +336,17 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                <div 
+                    @click="addSection"
+                    class="mt-8 p-8 border-2 border-dashed border-slate-300 rounded-xl text-center hover:border-indigo-400 hover:bg-slate-50 transition-colors cursor-pointer group"
+                >
+                    <span class="text-slate-400 font-bold group-hover:text-indigo-600 flex items-center justify-center gap-2 text-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Add New Section
+                    </span>
+                    <p class="text-slate-400 text-xs mt-1">Creates a new section on all 6 sites</p>
                 </div>
             </div>
         </div>
@@ -418,7 +433,7 @@
             const currentTab = ref('dashboard');
 
             const initSiteData = (siteId) => {
-                if (!siteData[siteId]) siteData[siteId] = {};
+                if (!siteData[siteId]) siteData[siteId] = []; // Changed to Array for correct splicing
                 if (siteHidden[siteId] === undefined) siteHidden[siteId] = false;
                 if (siteOpened[siteId] === undefined) siteOpened[siteId] = false;
             };
@@ -447,6 +462,33 @@
                 return (score * datum.q).toFixed(1);
             };
 
+            // SECTIONS
+            const addSection = () => {
+                const name = prompt("Enter Name for New Section:", "New Section");
+                if(name) {
+                    blueprint.push({
+                        id: Date.now().toString(),
+                        name: name,
+                        hidden: false,
+                        elements: []
+                    });
+                }
+            };
+
+            const removeSection = (sIdx) => {
+                if(confirm("Are you sure? This will remove this section from ALL 6 sites.")) {
+                    blueprint.splice(sIdx, 1);
+                    // Sync removal in siteData
+                    for(let i=1; i<=6; i++) {
+                        if(siteData[i]) {
+                             // Because siteData[i] is now initialized as [], splice works correctly on indices
+                             siteData[i].splice(sIdx, 1);
+                        }
+                    }
+                }
+            };
+
+            // ELEMENTS
             const addElement = (sIdx, type) => {
                 blueprint[sIdx].elements.push({ name: "New Element", type: type });
             };
@@ -473,9 +515,6 @@
                         sec.elements.forEach((el, eIdx) => {
                             const d = siteData[i]?.[sIdx]?.[eIdx];
                             if (d) {
-                                // Incomplete Logic:
-                                // 1. P or D is Null (Not started)
-                                // 2. P=1 but E=Null (Execution missing)
                                 if (d.p === null || d.d === null) count++;
                                 else if (d.p == 1 && d.e === null) count++;
                             }
@@ -581,7 +620,7 @@
                 isAuthenticated, passwordInput, login, logout, loginError,
                 currentTab, blueprint, getDatum, calculateRowScore, addElement, removeElement, resetAll,
                 siteIncompleteCounts, sortedSites, getCurrentSiteScores, getRowClass, gradeColor,
-                siteHidden, toggleSiteVisibility
+                siteHidden, toggleSiteVisibility, addSection, removeSection
             };
         }
     }).mount('#app');
